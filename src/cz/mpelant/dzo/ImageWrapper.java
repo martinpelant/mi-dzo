@@ -1,3 +1,4 @@
+
 package cz.mpelant.dzo;
 
 import java.awt.Color;
@@ -5,38 +6,56 @@ import java.awt.image.BufferedImage;
 
 public class ImageWrapper {
 	private BufferedImage img;
+	private int[][] r, b, g, grayscale;
 
 	public ImageWrapper(BufferedImage img) {
-		this.img=img;
+		this.img = img;
 	}
 
-
 	public ImageWrapper(int[][] r, int[][] g, int[][] b) {
-		this.img=rgbToImage(r, g, b);
+		this.r = r;
+		this.b = b;
+		this.g = g;
 	}
 
 	public int getWidth() {
-		return img.getWidth();
+		return getImage().getWidth();
 	}
 
 	public int getHeight() {
-		return img.getHeight();
+		return getImage().getHeight();
 	}
 
 	public ImageWrapper(int[][] grayscale) {
 		this(grayscale, grayscale, grayscale);
+		this.grayscale = grayscale;
 	}
 
 	public ImageWrapper toGrayscale() {
 		int[][] g = getGrayscaleArray();
-		return new ImageWrapper(g, g, g);
+		return new ImageWrapper(g);
 	}
 
-	public int[][] getGrayscaleArray(){
-		return rgbToGray(imageToRGBArray(img));
+	public void setGrayscale(int[][] grayscale) {
+		this.grayscale = grayscale;
+		r = grayscale;
+		g = grayscale;
+		b = grayscale;
+		img = null;
+
+	}
+
+	public int[][] getGrayscaleArray() {
+		if (grayscale == null) {
+			grayscale = rgbToGray(imageToRGBArray(img));
+		}
+		return grayscale;
 	}
 
 	public BufferedImage getImage() {
+		if (img == null) {
+			img = rgbToImage(r, g, b);
+		}
 		return img;
 	}
 
@@ -55,7 +74,6 @@ public class ImageWrapper {
 		return rgb;
 	}
 
-
 	private int[][] rgbToGray(int[][][] rgb) {
 		int[][] result = new int[rgb.length][rgb[0].length];
 		for (int x = 0; x < result.length; x++) {
@@ -65,7 +83,6 @@ public class ImageWrapper {
 		}
 		return result;
 	}
-
 
 	private BufferedImage rgbToImage(int[][] r, int[][] g, int[][] b) {
 		BufferedImage img = new BufferedImage(r.length, r[0].length, BufferedImage.TYPE_INT_RGB);

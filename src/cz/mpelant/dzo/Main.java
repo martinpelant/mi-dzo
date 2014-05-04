@@ -15,9 +15,29 @@ public class Main {
 	 */
 	public static void main(String[] args) throws IOException {
 		String kernelFname = "circle2.png";
+		test2(kernelFname);
 		blurImage(kernelFname);
 		deblurImage(kernelFname);
 
+	}
+
+	private static void test2(String kernelFname) throws IOException {
+		String fname =  "lena.jpg";
+		ImageWrapper src = loadImage(fname);
+		ImageWrapper kernel = loadImage(kernelFname);
+
+		ImageWrapper out = ConvoutionUtils.convolveDeconvolve(src, kernel);
+
+		saveImageAsPng(out, "outTest2");
+	}
+
+	private static void test() throws IOException {
+		String fname =  "lena.jpg";
+		ImageWrapper src = loadImage(fname);
+
+		ImageWrapper out = ConvoutionUtils.testFT(src);
+
+		saveImageAsPng(out, "outTest");
 	}
 
 	private static void deblurImage(String kernelFname) throws IOException {

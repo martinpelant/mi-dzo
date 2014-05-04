@@ -5,6 +5,39 @@ import edu.emory.mathcs.jtransforms.fft.DoubleFFT_2D;
 
 public class ConvoutionUtils {
 
+	public static ImageWrapper testFT(ImageWrapper img) {
+		DoubleFFT_2D fft = new DoubleFFT_2D(img.getHeight(), img.getWidth());
+
+		double[][] imgc = convertToCplx(img);
+
+		fft.complexForward(imgc);
+		fft.complexInverse(imgc, true);
+		return extractNormalizedImage(imgc);
+	}
+
+	public static ImageWrapper convolveDeconvolve(ImageWrapper img, ImageWrapper kernel) {
+		DoubleFFT_2D fft = new DoubleFFT_2D(img.getHeight(), img.getWidth());
+
+		double[][] imgc = convertToCplx(img);
+		double[][] kernelc = convertToCplx(kernel);
+		normalizeKernel(kernelc);
+
+		fft.complexForward(imgc);
+		fft.complexForward(kernelc);
+		double[][] result = multiplyComplex(imgc, kernelc);
+		fft.complexInverse(result, true);
+
+		fft.complexForward(result);
+		double[][] result2;
+		result2 = divideComplex(result, kernelc);
+
+		fft.complexInverse(result2, true);
+		ImageWrapper resultImg = extractNormalizedImage(result2);
+		// rotateImage(resultImg);
+		return resultImg;
+
+	}
+
 	public static ImageWrapper convolve(ImageWrapper img, ImageWrapper kernel) {
 		DoubleFFT_2D fft = new DoubleFFT_2D(img.getHeight(), img.getWidth());
 
@@ -18,30 +51,27 @@ public class ConvoutionUtils {
 		double[][] result = multiplyComplex(imgc, kernelc);
 
 		fft.complexInverse(result, true);
-		int[][] resultImg = extractImage(result);
+		ImageWrapper resultImg = extractNormalizedImage(result);
 		rotateImage(resultImg);
-		return new ImageWrapper(resultImg);
+		return resultImg;
 
 	}
 
 	public static ImageWrapper deconvolve(ImageWrapper img, ImageWrapper kernel) {
 		DoubleFFT_2D fft = new DoubleFFT_2D(img.getHeight(), img.getWidth());
-
 		double[][] imgc = convertToCplx(img);
 		double[][] kernelc = convertToCplx(kernel);
 		normalizeKernel(kernelc);
-
 		fft.complexForward(imgc);
 		fft.complexForward(kernelc);
 
 		double[][] result = divideComplex(imgc, kernelc);
 
 		fft.complexInverse(result, true);
-
-		int[][] resultImg = extractImage(result);
+		ImageWrapper resultImg = extractNormalizedImage(result);
 		rotateImage(resultImg);
 
-		return new ImageWrapper(resultImg);
+		return resultImg;
 
 	}
 
@@ -52,10 +82,10 @@ public class ConvoutionUtils {
 		DoubleFFT_2D fft = new DoubleFFT_2D(img.getHeight(), img.getWidth());
 		fft.complexForward(c);
 
-		int[][] amplitude = normalizeAmplitude(getAmplitudeFromComplex(c));
+		ImageWrapper amplitude = extractNormalizedAmplitude(getAmplitudeFromComplex(c));
 
 		rotateImage(amplitude);
-		return new ImageWrapper(amplitude);
+		return amplitude;
 	}
 
 	private static double[][] convertToCplx(ImageWrapper img) {
@@ -69,7 +99,7 @@ public class ConvoutionUtils {
 		return result;
 	}
 
-	private static int[][] extractImage(double[][] imageCplx) {
+	private static ImageWrapper extractImage(double[][] imageCplx) {
 		int[][] img = new int[imageCplx.length][imageCplx.length];
 		for (int x = 0; x < img.length; x++) {
 			for (int y = 0; y < img[0].length; y++) {
@@ -79,24 +109,26 @@ public class ConvoutionUtils {
 				}
 			}
 		}
-		return img;
+		return new ImageWrapper(img);
 	}
 
-	private static int[][] extractNormalizedImage(double[][] imageCplx) {
-		int[][] img = new int[imageCplx.length][imageCplx.length];
+	private static ImageWrapper extractNormalizedImage(double[][] imageCplx) {
+		double[][] img = new double[imageCplx.length][imageCplx.length];
 		for (int x = 0; x < img.length; x++) {
 			for (int y = 0; y < img[0].length; y++) {
-				img[x][y] = (int) imageCplx[y][x * 2];
+				img[x][y] = imageCplx[y][x * 2];
 			}
 		}
-		return normalizeImage(img);
+		return new ImageWrapper(normalizeArray(img, 255));
 	}
 
-	private static void rotateImage(int[][] img) {
+	private static void rotateImage(ImageWrapper imgW) {
+		int[][] img = imgW.getGrayscaleArray();
 		for (int i = 0; i < img.length; i++) {
 			rotateArray(img[i], img[i].length / 2);
 		}
 		rotateArray(img, img.length / 2);
+		imgW.setGrayscale(img);
 	}
 
 	private static double[][] multiplyComplex(double[][] x, double[][] y) {
@@ -124,11 +156,25 @@ public class ConvoutionUtils {
 				double s = y[i][j + 1];
 
 				double dividedBy = (Math.pow(r, 2) + Math.pow(s, 2));
+				double realTop = (p * r + q * s);
+				double imaginaryTop = (q * r - p * s);
 				if (dividedBy == 0) {
-					dividedBy = 0.000000001;
+					if ((p * r + q * s) == 0) {
+						result[i][j] = 0;
+					} else {
+						result[i][j] = Math.signum(realTop) * Double.MAX_VALUE;
+					}
+
+					if ((q * r - p * s) == 0) {
+						result[i][j + 1] = 0;
+					} else {
+						result[i][j + 1] = Math.signum(imaginaryTop) * Double.MAX_VALUE;
+					}
+
+				} else {
+					result[i][j] = realTop / dividedBy;
+					result[i][j + 1] = imaginaryTop / dividedBy;
 				}
-				result[i][j] = (p * r + q * s) / dividedBy;
-				result[i][j + 1] = (q * r - p * s) / dividedBy;
 
 			}
 		}
@@ -167,8 +213,7 @@ public class ConvoutionUtils {
 		return ampl;
 	}
 
-
-	private static int[][] normalizeImage(int[][] a) {
+	private static int[][] normalizeImageLog(int[][] a) {
 		int minValue = Integer.MAX_VALUE;
 		int maxValue = Integer.MIN_VALUE;
 
@@ -197,9 +242,36 @@ public class ConvoutionUtils {
 		return normImg;
 	}
 
+	private static int[][] normalizeArray(double[][] a, double pMaxValue) {
+		double minValue = Double.MAX_VALUE;
+		double maxValue = Double.MIN_VALUE;
 
+		for (int i = 0; i < a.length; i++) {
+			for (int j = 0; j < a[0].length; j++) {
+				double value = a[i][j];
+				if (value < minValue) {
+					minValue = value;
+				}
+				if (value > maxValue) {
+					maxValue = value;
+				}
+			}
+		}
 
-	private static int[][] normalizeAmplitude(double[][] a) {
+		int[][] normImg = new int[a.length][a[0].length];
+
+		for (int i = 0; i < a.length; i++) {
+			for (int j = 0; j < a[0].length; j++) {
+				double value = a[i][j];
+				value = (value - minValue) / (maxValue - minValue);
+				normImg[i][j] = (int) (value * pMaxValue);
+			}
+		}
+
+		return normImg;
+	}
+
+	private static ImageWrapper extractNormalizedAmplitude(double[][] a) {
 		double minValue = Double.MAX_VALUE;
 		double maxValue = Double.MIN_VALUE;
 
@@ -225,7 +297,7 @@ public class ConvoutionUtils {
 			}
 		}
 
-		return normAmpl;
+		return new ImageWrapper(normAmpl);
 	}
 
 	private static void rotateArray(int[] array, int index) {
