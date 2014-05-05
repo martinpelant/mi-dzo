@@ -14,7 +14,7 @@ public class Main {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		String kernelFname = "circle2.png";
+		String kernelFname = "line.png";
 		test2(kernelFname);
 		blurImage(kernelFname);
 		deblurImage(kernelFname);

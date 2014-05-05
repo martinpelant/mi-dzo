@@ -27,6 +27,8 @@ public class ConvoutionUtils {
 		double[][] result = multiplyComplex(imgc, kernelc);
 		fft.complexInverse(result, true);
 
+		//		result = convertToCplx(extractNormalizedImage(result));
+
 		fft.complexForward(result);
 		double[][] result2;
 		result2 = divideComplex(result, kernelc);
@@ -44,7 +46,7 @@ public class ConvoutionUtils {
 		double[][] imgc = convertToCplx(img);
 		double[][] kernelc = convertToCplx(kernel);
 		normalizeKernel(kernelc);
-
+		// to01(imgc);
 		fft.complexForward(imgc);
 		fft.complexForward(kernelc);
 
@@ -62,6 +64,7 @@ public class ConvoutionUtils {
 		double[][] imgc = convertToCplx(img);
 		double[][] kernelc = convertToCplx(kernel);
 		normalizeKernel(kernelc);
+		// to01(imgc);
 		fft.complexForward(imgc);
 		fft.complexForward(kernelc);
 
@@ -97,6 +100,14 @@ public class ConvoutionUtils {
 			}
 		}
 		return result;
+	}
+
+	private static void to01(double[][] array) {
+		for (int x = 0; x < array.length; x++) {
+			for (int y = 0; y < array[0].length; y++) {
+				array[x][y] /= 256;
+			}
+		}
 	}
 
 	private static ImageWrapper extractImage(double[][] imageCplx) {
@@ -242,7 +253,7 @@ public class ConvoutionUtils {
 		return normImg;
 	}
 
-	private static int[][] normalizeArray(double[][] a, double pMaxValue) {
+	private static int[][] normalizeArray(double[][] a, int pMaxValue) {
 		double minValue = Double.MAX_VALUE;
 		double maxValue = Double.MIN_VALUE;
 
