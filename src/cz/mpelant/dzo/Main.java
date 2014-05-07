@@ -14,21 +14,33 @@ public class Main {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		String kernelFname = "line.png";
-		test2(kernelFname);
+		String kernelFname = "circle.png";
+		blurDeblur(kernelFname);
 		blurImage(kernelFname);
 		deblurImage(kernelFname);
+		amplitude(kernelFname);
 
 	}
 
-	private static void test2(String kernelFname) throws IOException {
+
+
+	private static void amplitude(String fname) throws IOException {
+		ImageWrapper src = loadImage(fname);
+
+		ImageWrapper out = ConvoutionUtils.getAmplitude(src);
+
+		saveImageAsPng(out, "outBlurAmplitude");
+	}
+
+
+	private static void blurDeblur(String kernelFname) throws IOException {
 		String fname =  "lena.jpg";
 		ImageWrapper src = loadImage(fname);
 		ImageWrapper kernel = loadImage(kernelFname);
 
 		ImageWrapper out = ConvoutionUtils.convolveDeconvolve(src, kernel);
 
-		saveImageAsPng(out, "outTest2");
+		saveImageAsPng(out, "outBlurDeblur");
 	}
 
 	private static void test() throws IOException {
