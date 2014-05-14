@@ -7,27 +7,25 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 public class Main {
-	private static String IMAGE="metro.jpg";
-	private static String KERNEL="line.png";
+	private static String IMAGE="me.png";
+	private static String KERNEL="circle.png";
 
-	/**
-	 * @param args
-	 * @throws IOException
-	 */
+
 	public static void main(String[] args) throws IOException {
-		blurDeblur();
+		//		blurDeblur();
 		blurImage();
 		deblurImage();
-		amplitude(KERNEL);
-		amplitude(IMAGE);
-		amplitude("outBlurred.png");
-		amplitude("outDeblurred.png");
-		amplitude("outBlurDeblur.png");
+		//		amplitude(KERNEL);
+		//		amplitude(IMAGE);
+		//		amplitude("outBlurred.png");
+		//		amplitude("outDeblurred.png");
+		//		amplitude("outBlurDeblur.png");
 
 	}
 
 
 
+	//Ulozi amplitudu obrazku do souboru outAmplitude_[fname].png
 	private static void amplitude(String fname) throws IOException {
 		ImageWrapper src = loadImage(fname);
 
@@ -37,6 +35,7 @@ public class Main {
 	}
 
 
+	//provede konvoluci a zpetnou dekonvoluci s kernelem KERNEL bez mezikroku ulozeni do PNG vysledek ulozi do outBlurDeblur.png
 	private static void blurDeblur() throws IOException {
 		ImageWrapper src = loadImage(IMAGE);
 		ImageWrapper kernel = loadImage(KERNEL);
@@ -46,6 +45,7 @@ public class Main {
 		saveImageAsPng(out, "outBlurDeblur");
 	}
 
+	//provede dekonvoluci obrazku outBlurred.png s kernelem KERNEL vysledek ulozi do outDeBlurred.png
 	private static void deblurImage() throws IOException {
 		String fname = "outBlurred.png";
 		// fname = "lena.jpg";
@@ -57,6 +57,7 @@ public class Main {
 		saveImageAsPng(out, "outDeBlurred");
 	}
 
+	//provede konvoluci obrazku IMAGE a s kernelem KERNEL vysledek ulozi do outBlurred.png
 	private static void blurImage() throws IOException {
 		ImageWrapper src = loadImage(IMAGE);
 		ImageWrapper kernel = loadImage(KERNEL);
