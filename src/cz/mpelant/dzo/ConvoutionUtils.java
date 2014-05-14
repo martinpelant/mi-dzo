@@ -4,6 +4,7 @@ package cz.mpelant.dzo;
 import edu.emory.mathcs.jtransforms.fft.DoubleFFT_2D;
 
 public class ConvoutionUtils {
+	public static final double T_CONST = 0.0001;
 
 	public static ImageWrapper testFT(ImageWrapper img) {
 		DoubleFFT_2D fft = new DoubleFFT_2D(img.getHeight(), img.getWidth());
@@ -169,23 +170,9 @@ public class ConvoutionUtils {
 				double dividedBy = (Math.pow(r, 2) + Math.pow(s, 2));
 				double realTop = (p * r + q * s);
 				double imaginaryTop = (q * r - p * s);
-				if (dividedBy == 0) {
-					if ((p * r + q * s) == 0) {
-						result[i][j] = 0;
-					} else {
-						result[i][j] = Math.signum(realTop) * Double.MAX_VALUE;
-					}
-
-					if ((q * r - p * s) == 0) {
-						result[i][j + 1] = 0;
-					} else {
-						result[i][j + 1] = Math.signum(imaginaryTop) * Double.MAX_VALUE;
-					}
-
-				} else {
-					result[i][j] = realTop / dividedBy;
-					result[i][j + 1] = imaginaryTop / dividedBy;
-				}
+				dividedBy+=T_CONST;
+				result[i][j] = realTop / dividedBy;
+				result[i][j + 1] = imaginaryTop / dividedBy;
 
 			}
 		}

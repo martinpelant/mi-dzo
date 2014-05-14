@@ -8,7 +8,7 @@ import javax.imageio.ImageIO;
 
 public class Main {
 	private static String IMAGE="metro.jpg";
-	private static String KERNEL="circle.png";
+	private static String KERNEL="line.png";
 
 	/**
 	 * @param args
